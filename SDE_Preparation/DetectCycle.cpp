@@ -77,7 +77,7 @@ int main(){
         }
         for(int i=1; i<n; i++){
             if(visited[i] == 0){
-                stack[++top] = 1;
+                stack[++top] = i;
                 isCyclic(i);
                 top--;
             }
