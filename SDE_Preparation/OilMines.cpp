@@ -1,72 +1,64 @@
 #include <iostream>
 using namespace std;
- 
-int ans = 2e9;
- 
-void findDiff(int comp[], int n) {
-    int maxx = -1, minn = 2e9;
-    for (int i = 0; i < n; ++i) {
-        if (comp[i] < minn) minn = comp[i];
-        if (comp[i] > maxx) maxx = comp[i];
-    }
-    if (maxx - minn < ans) ans = maxx - minn;
+
+int n, m, answer;
+int company[10], oil[10];
+
+int MIN(int x, int y){
+    if(x<y) return x;
+    else return y;
 }
- 
-void solve(int curPos, int endPos, int comp[], int mines[], int n, int m, int companyNum, int remainingMines) {
-    if (remainingMines < n - companyNum) return;  // remove if company can get 0 mines
-    // if all companies have been assigned some mines
-    if ((curPos + 1) % m == endPos) {
-        // if last mine is remaining and last company is remaining
-        if (companyNum == n - 1) {
-            // assign last mine to last company and cmpute result
-            comp[companyNum] += mines[curPos];
-            findDiff(comp, n);
-            // backtrack
-            comp[companyNum] -= mines[curPos];
+
+int MAX(int x, int y){
+    if(x>y) return x;
+    else return y;
+}
+
+void getMinDiff(){
+    int mini = 9999;
+    int maxi = 0;
+    for(int i=0; i<n; i++){
+        mini = MIN(mini, company[i]);
+        maxi = MAX(maxi, company[i]);
+    }
+    if((maxi-mini) <answer)
+        answer = maxi-mini;
+}
+
+void solution(int last, int current, int num){
+    if((current+1)%m == last){
+        for(int i=num; i<n; i++){
+            company[i] += oil[current];
+            getMinDiff();
+            company[i] -= oil[current];
         }
         return;
     }
- 
-    if (companyNum >= n) return;
- 
-    // assign current mine to current company
-    comp[companyNum] += mines[curPos];
-    // solve for same company and next mine
-    solve((curPos + 1) % m, endPos, comp, mines, n, m, companyNum, remainingMines - 1);
-    // solve for next company and next mine
-    solve((curPos + 1) % m, endPos, comp, mines, n, m, companyNum + 1, remainingMines - 1);
- 
-    // do not assign mine to current company (backtracking)
-    comp[companyNum] -= mines[curPos];
-    // solve for next company and current mine
-    if (comp[companyNum] > 0)  // if mine value can't be <= 0 (comment this condition if mine value can be <=0)
-        solve(curPos, endPos, comp, mines, n, m, companyNum + 1, remainingMines);
+    if(num == n){
+        return;
+    }
+    company[num] += oil[current];
+    solution(last, (current+1)%m, num);
+    company[num] -= oil[current];
+    solution(last, current, num+1);
 }
- 
-int main() {
 
+int main(){
     int tc;
     cin >> tc;
     while(tc--){
-        int n, m;
-        cin >> n >> m;
-    
-        // mines
-        int mines[m];
-        for (int i = 0; i < m; ++i) 
-            cin >> mines[i];
-    
-        // comp stores the total mine value assigned to a company
-        int comp[n] = {0};
-        if (n > m) {  // remove this if a company can get 0 mines
-            cout << "-1" << endl;
-            return -1;
+        cin >> n >>m;
+        for(int i=0; i<m; i++){
+            cin >> oil[i];
         }
-        // start from all the places and solve for all possible ways to fill comp[]
-        for (int i = 0; i < m; ++i) {
-            solve(i, i, comp, mines, n, m, 0, m);
+        for(int i=0; i<n; i++){
+            company[i] = 0;
         }
-        cout << ans << endl;
+        answer = 9999;
+        for(int i=0; i<m; i++){
+            solution(i, i, 0);
+        }
+        cout << answer << endl;
     }
-    return 0;
+
 }
